@@ -1,6 +1,9 @@
 const inquirer = require("inquirer");
 const fs = require("fs").promises;
 
+const CHOICE_GET = "Get a password";
+const CHOICE_SET = "Set a password";
+
 const accessQuestions = [
   {
     type: "input",
@@ -9,7 +12,7 @@ const accessQuestions = [
   },
   {
     type: "password",
-    name: "password",
+    name: "masterPassword",
     message: "What's your masterpassword?",
   },
 ];
@@ -19,7 +22,7 @@ const choice = [
     type: "list",
     name: "option",
     message: "What do you want to do?",
-    choices: ["Get a password", "Create a new password"],
+    choices: [CHOICE_GET, CHOICE_SET],
   },
 ];
 
@@ -44,15 +47,13 @@ const newPassword = [
   },
 ];
 
-const content = "Some content!";
-
-inquirer.prompt(accessQuestions).then((answers) => {
-  if (answers.password === "123" && answers.username === "Slawo") {
+inquirer.prompt(accessQuestions).then(({ masterPassword, username }) => {
+  if (masterPassword === "123" && username === "Slawo") {
     console.log("Welcome");
-    inquirer.prompt(choice).then(async (answers) => {
-      if (answers.option === "Get a password") {
+    inquirer.prompt(choice).then(async (choice) => {
+      if (choice.option === CHOICE_GET) {
         console.log("ok, buddy");
-        inquirer.prompt(passwordRequest).then(async (answers) => {
+        inquirer.prompt(passwordRequest).then(async ({ key }) => {
           try {
             const passwordsJSON = await fs.readFile(
               "./passwords.json",
@@ -60,17 +61,15 @@ inquirer.prompt(accessQuestions).then((answers) => {
             );
             const passwords = JSON.parse(passwordsJSON);
             console.log(
-              `Hi ${answers[`username`]}, your needed password for ${
-                answers.key
-              } is:
-                  ${passwords[answers.key]}!`
+              `Hi ${username}, your needed password for ${key} is:
+                  ${passwords[key]}!`
             );
           } catch (error) {
             console.error("Something went wrong 😑");
           }
         });
       } else {
-        inquirer.prompt(newPassword).then((answers) => {});
+        inquirer.prompt(newPassword).then(({ key, password }) => {});
       }
     });
   } else {
