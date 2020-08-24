@@ -14,15 +14,12 @@ const accessQuestions = [
   },
 ];
 
-const CHOICE_GET = "Get a password";
-const CHOICE_SET = "Set a password";
-
 const choice = [
   {
     type: "list",
     name: "option",
     message: "What do you want to do?",
-    choices: [CHOICE_GET, CHOICE_SET],
+    choices: ["Get a password", "Create a new password"],
   },
 ];
 
@@ -47,13 +44,15 @@ const newPassword = [
   },
 ];
 
+const content = "Some content!";
+
 inquirer.prompt(accessQuestions).then((answers) => {
   if (answers.password === "123" && answers.username === "Slawo") {
     console.log("Welcome");
-    inquirer.prompt(choice).then(async (choice) => {
-      if (choice.option === CHOICE_GET) {
+    inquirer.prompt(choice).then(async (answers) => {
+      if (answers.option === "Get a password") {
         console.log("ok, buddy");
-        inquirer.prompt(passwordRequest).then(async (key) => {
+        inquirer.prompt(passwordRequest).then(async (answers) => {
           try {
             const passwordsJSON = await fs.readFile(
               "./passwords.json",
@@ -61,15 +60,17 @@ inquirer.prompt(accessQuestions).then((answers) => {
             );
             const passwords = JSON.parse(passwordsJSON);
             console.log(
-              `Hi ${answers.username}, your needed password for ${key.key} is:
-                  ${passwords[key.key]}!`
+              `Hi ${answers[`username`]}, your needed password for ${
+                answers.key
+              } is:
+                  ${passwords[answers.key]}!`
             );
           } catch (error) {
             console.error("Something went wrong 😑");
           }
         });
       } else {
-        inquirer.prompt(newPassword).then((options) => {});
+        inquirer.prompt(newPassword).then((answers) => {});
       }
     });
   } else {
