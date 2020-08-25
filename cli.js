@@ -6,7 +6,7 @@ const {
   CHOICE_GET,
   CHOICE_SET,
 } = require("./lib/questions");
-const { readPassword } = require("./lib/passwords");
+const { readPassword, writePassword } = require("./lib/passwords");
 
 async function main() {
   const { masterPassword, username } = await askAccessQuestions();
@@ -28,6 +28,7 @@ async function main() {
     } else if (option === CHOICE_SET) {
       console.log("Let's go my friend!");
       const { title, password } = await askNewPassword();
+      await writePassword(title, password);
       console.log(
         `You set up a password for ${title}. The new password is: ${password}`
       );

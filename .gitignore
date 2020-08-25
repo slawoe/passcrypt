@@ -107,3 +107,6 @@ dist
 passwords.json
 climyway.js
 clisolution2.js
+
+#editors
+.vscode
