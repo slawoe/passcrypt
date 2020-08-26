@@ -5,7 +5,8 @@
   "main": "cli.js",
   "dependencies": {
     "bcrypt": "^5.0.0",
-    "inquirer": "^7.3.3"
+    "inquirer": "^7.3.3",
+    "mongodb": "^3.6.0"
   },
   "devDependencies": {},
   "scripts": {
