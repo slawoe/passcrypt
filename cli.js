@@ -19,8 +19,9 @@ async function main() {
       const { key } = await askPasswordRequests();
       try {
         const password = await readPassword(key);
+        const decryptedPassword = decrypt(password, masterPassword);
         console.log(
-          `Hi ${username}, your needed password for ${key} is: ${password}!`
+          `Hi ${username}, your needed password for ${key} is: ${decryptedPassword}!`
         );
       } catch (error) {
         console.error("Something went wrong 😑");
@@ -29,7 +30,6 @@ async function main() {
       console.log("Let's go my friend!");
       const { title, password } = await askNewPassword();
       const encryptedPassword = encrypt(password, masterPassword);
-      console.log(encryptedPassword);
       await writePassword(title, encryptedPassword);
       console.log(
         `You set up a password for ${title}. The new password is: ${password}`
