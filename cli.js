@@ -28,12 +28,16 @@ async function main() {
       }
     } else if (option === CHOICE_SET) {
       console.log("Let's go my friend!");
-      const { title, password } = await askNewPassword();
-      const encryptedPassword = encrypt(password, masterPassword);
-      await writePassword(title, encryptedPassword);
-      console.log(
-        `You set up a password for ${title}. The new password is: ${password}`
-      );
+      try {
+        const { title, password } = await askNewPassword();
+        const encryptedPassword = encrypt(password, masterPassword);
+        await writePassword(title, encryptedPassword);
+        console.log(
+          `You set up a password for ${title}. The new password is: ${password}`
+        );
+      } catch (error) {
+        console.error("Something went wrong 😑");
+      }
     }
   } else console.log("Your password or unsername is wrong");
 }
