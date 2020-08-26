@@ -3,14 +3,41 @@ const {
   askChoice,
   askPasswordRequests,
   askNewPassword,
+  askForMasterPassword,
   CHOICE_GET,
   CHOICE_SET,
 } = require("./lib/questions");
-const { readPassword, writePassword } = require("./lib/passwords");
+const {
+  readPassword,
+  writePassword,
+  readMasterPassword,
+  writeMasterPassword,
+} = require("./lib/passwords");
+const {
+  encrypt,
+  decrypt,
+  // createHash,
+  // verifyHash,
+  bcryptHash,
+  bcryptHashCompare,
+} = require("./lib/crypto");
 
 async function main() {
+  const masterMasterPassword = await readMasterPassword();
+  if (!masterMasterPassword) {
+    const { newMasterPassword } = await askForMasterPassword();
+    const masterMasterPassword = await bcryptHash(newMasterPassword, 10);
+    await writeMasterPassword(masterMasterPassword);
+    console.log("MP set");
+    return;
+  }
+
   const { masterPassword, username } = await askAccessQuestions();
-  if (masterPassword === "123" && username === "Slawo") {
+  const isPasswordCorrect = await bcryptHashCompare(
+    masterPassword,
+    masterMasterPassword
+  );
+  if (isPasswordCorrect && username === "Slawo") {
     console.log("Welcome");
     const { option } = await askChoice();
     if (option === CHOICE_GET) {
@@ -18,20 +45,25 @@ async function main() {
       const { key } = await askPasswordRequests();
       try {
         const password = await readPassword(key);
+        const decryptedPassword = decrypt(password, masterPassword);
         console.log(
-          `Hi ${username}, your needed password for ${key} is:
-                            ${password}!`
+          `Hi ${username}, your needed password for ${key} is: ${decryptedPassword}!`
+        );
+      } catch (error) {
+        console.error("Something went wrong 😑", error);
+      }
+    } else if (option === CHOICE_SET) {
+      console.log("Let's go my friend!");
+      try {
+        const { title, password } = await askNewPassword();
+        const encryptedPassword = encrypt(password, masterPassword);
+        await writePassword(title, encryptedPassword);
+        console.log(
+          `You set up a password for ${title}. The new password is: ${password}`
         );
       } catch (error) {
         console.error("Something went wrong 😑");
       }
-    } else if (option === CHOICE_SET) {
-      console.log("Let's go my friend!");
-      const { title, password } = await askNewPassword();
-      await writePassword(title, password);
-      console.log(
-        `You set up a password for ${title}. The new password is: ${password}`
-      );
     }
   } else console.log("Your password or unsername is wrong");
 }
