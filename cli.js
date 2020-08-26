@@ -7,6 +7,7 @@ const {
   CHOICE_SET,
 } = require("./lib/questions");
 const { readPassword, writePassword } = require("./lib/passwords");
+const { encrypt, decrypt, createHash, verifyHash } = require("./lib/crypto");
 
 async function main() {
   const { masterPassword, username } = await askAccessQuestions();
@@ -19,8 +20,7 @@ async function main() {
       try {
         const password = await readPassword(key);
         console.log(
-          `Hi ${username}, your needed password for ${key} is:
-                            ${password}!`
+          `Hi ${username}, your needed password for ${key} is: ${password}!`
         );
       } catch (error) {
         console.error("Something went wrong 😑");
@@ -28,7 +28,9 @@ async function main() {
     } else if (option === CHOICE_SET) {
       console.log("Let's go my friend!");
       const { title, password } = await askNewPassword();
-      await writePassword(title, password);
+      const encryptedPassword = encrypt(password, masterPassword);
+      console.log(encryptedPassword);
+      await writePassword(title, encryptedPassword);
       console.log(
         `You set up a password for ${title}. The new password is: ${password}`
       );
