@@ -6,10 +6,12 @@ const {
   askForMasterPassword,
   CHOICE_GET,
   CHOICE_SET,
+  CHOICE_DELETE,
 } = require("./lib/questions");
 const {
   readPassword,
   writePassword,
+  deletePassword,
   readMasterPassword,
   writeMasterPassword,
 } = require("./lib/passwords");
@@ -34,7 +36,7 @@ async function main() {
       const { newMasterPassword } = await askForMasterPassword();
       const masterMasterPassword = await bcryptHash(newMasterPassword, 10);
       await writeMasterPassword(masterMasterPassword);
-      console.log("MP set");
+      console.log("MasterPassword set");
       return;
     }
 
@@ -69,6 +71,15 @@ async function main() {
           );
         } catch (error) {
           console.error("Something went wrong 😑");
+        }
+      } else if (option === CHOICE_DELETE) {
+        console.log("Ok, bro. Let's delete some stuff!");
+        const { key } = await askPasswordRequests();
+        try {
+          await deletePassword(key, database);
+          console.log(`Your password is deleted!`);
+        } catch (error) {
+          console.error("Something went wrong 😑", error);
         }
       }
     } else console.log("Your password or unsername is wrong");
