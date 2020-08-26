@@ -13,19 +13,31 @@ const {
   readMasterPassword,
   writeMasterPassword,
 } = require("./lib/passwords");
-const { encrypt, decrypt, createHash, verifyHash } = require("./lib/crypto");
+const {
+  encrypt,
+  decrypt,
+  // createHash,
+  // verifyHash,
+  bcryptHash,
+  bcryptHashCompare,
+} = require("./lib/crypto");
 
 async function main() {
   const masterMasterPassword = await readMasterPassword();
   if (!masterMasterPassword) {
     const { newMasterPassword } = await askForMasterPassword();
-    await writeMasterPassword(newMasterPassword);
+    const masterMasterPassword = await bcryptHash(newMasterPassword, 10);
+    await writeMasterPassword(masterMasterPassword);
     console.log("MP set");
     return;
   }
 
   const { masterPassword, username } = await askAccessQuestions();
-  if (masterPassword === masterMasterPassword && username === "Slawo") {
+  const isPasswordCorrect = await bcryptHashCompare(
+    masterPassword,
+    masterMasterPassword
+  );
+  if (isPasswordCorrect && username === "Slawo") {
     console.log("Welcome");
     const { option } = await askChoice();
     if (option === CHOICE_GET) {
@@ -33,18 +45,18 @@ async function main() {
       const { key } = await askPasswordRequests();
       try {
         const password = await readPassword(key);
-        const decryptedPassword = decrypt(password, masterMasterPassword);
+        const decryptedPassword = decrypt(password, masterPassword);
         console.log(
           `Hi ${username}, your needed password for ${key} is: ${decryptedPassword}!`
         );
       } catch (error) {
-        console.error("Something went wrong 😑");
+        console.error("Something went wrong 😑", error);
       }
     } else if (option === CHOICE_SET) {
       console.log("Let's go my friend!");
       try {
         const { title, password } = await askNewPassword();
-        const encryptedPassword = encrypt(password, masterMasterPassword);
+        const encryptedPassword = encrypt(password, masterPassword);
         await writePassword(title, encryptedPassword);
         console.log(
           `You set up a password for ${title}. The new password is: ${password}`
