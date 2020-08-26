@@ -21,7 +21,7 @@ const {
 } = require("./lib/crypto");
 const { MongoClient } = require("mongodb");
 const uri =
-  "mongodb+srv://slawo_e:neuefische2020@development.qmyte.mongodb.net?retryWrites=true&w=majority";
+  "mongodb+srv://slawo_e:neuefische2020@development.qmyte.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
 
 async function main() {
