@@ -9,3 +9,7 @@ app.listen(3000, function () {
 app.get(`/`, function (req, res) {
   res.sendFile("/Users/slawomirernst/dev/passcrypt" + "/index.html");
 });
+
+app.post("/quotes", (req, res) => {
+  console.log("Hellooooooooooooooooo!");
+});
