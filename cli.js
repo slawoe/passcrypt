@@ -1,3 +1,4 @@
+require("dotenv").config();
 const {
   askAccessQuestions,
   askChoice,
@@ -22,14 +23,13 @@ const {
   bcryptHashCompare,
 } = require("./lib/crypto");
 const { MongoClient } = require("mongodb");
-const uri =
-  "mongodb+srv://slawo_e:neuefische2020@development.qmyte.mongodb.net/?retryWrites=true&w=majority";
-const client = new MongoClient(uri);
+
+const client = new MongoClient(process.env.MONGO_URL);
 
 async function main() {
   try {
     await client.connect();
-    const database = client.db("passcrypt");
+    const database = client.db(process.env.MONGO_DB);
 
     const masterMasterPassword = await readMasterPassword();
     if (!masterMasterPassword) {
