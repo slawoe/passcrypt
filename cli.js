@@ -1,3 +1,4 @@
+require("dotenv").config();
 const {
   askAccessQuestions,
   askChoice,
@@ -6,10 +7,12 @@ const {
   askForMasterPassword,
   CHOICE_GET,
   CHOICE_SET,
+  CHOICE_DELETE,
 } = require("./lib/questions");
 const {
   readPassword,
   writePassword,
+  deletePassword,
   readMasterPassword,
   writeMasterPassword,
 } = require("./lib/passwords");
@@ -20,21 +23,20 @@ const {
   bcryptHashCompare,
 } = require("./lib/crypto");
 const { MongoClient } = require("mongodb");
-const uri =
-  "mongodb+srv://slawo_e:neuefische2020@development.qmyte.mongodb.net/?retryWrites=true&w=majority";
-const client = new MongoClient(uri);
+
+const client = new MongoClient(process.env.MONGO_URL);
 
 async function main() {
   try {
     await client.connect();
-    const database = client.db("passcrypt");
+    const database = client.db(process.env.MONGO_DB);
 
     const masterMasterPassword = await readMasterPassword();
     if (!masterMasterPassword) {
       const { newMasterPassword } = await askForMasterPassword();
       const masterMasterPassword = await bcryptHash(newMasterPassword, 10);
       await writeMasterPassword(masterMasterPassword);
-      console.log("MP set");
+      console.log("MasterPassword set");
       return;
     }
 
@@ -69,6 +71,15 @@ async function main() {
           );
         } catch (error) {
           console.error("Something went wrong 😑");
+        }
+      } else if (option === CHOICE_DELETE) {
+        console.log("Ok, bro. Let's delete some stuff!");
+        const { key } = await askPasswordRequests();
+        try {
+          await deletePassword(key, database);
+          console.log(`Your password is deleted!`);
+        } catch (error) {
+          console.error("Something went wrong 😑", error);
         }
       }
     } else console.log("Your password or unsername is wrong");
