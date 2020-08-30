@@ -22,24 +22,49 @@ async function main() {
   await client.connect();
   const database = client.db(process.env.MONGO_DB);
   const masterPassword = process.env.MASTER_PASSWORD;
+  const collection = database.collection("passwords");
 
   app.get("/api/passwords/:name", async (request, response) => {
-    const { name } = request.params;
-    const password = await readPassword(name, database);
-    const decryptedPassword = decrypt(password, masterPassword);
-    response.status(200).send(decryptedPassword);
+    try {
+      const { name } = request.params;
+      const password = await readPassword(name, database);
+      const decryptedPassword = decrypt(password, masterPassword);
+      response.status(200).send(decryptedPassword);
+    } catch (error) {
+      console.error("Something went wrong 😑", error);
+    }
   });
 
   app.post("/api/passwords", async (request, response) => {
-    console.log("POST in /api/passwords");
-    const { name, value } = request.body;
-    const encryptedPassword = encrypt(value, masterPassword);
-    await writePassword(name, encryptedPassword, database);
-    response.status(201).send("Password created");
+    try {
+      console.log("POST in /api/passwords");
+      const { name, value } = request.body;
+      const encryptedPassword = encrypt(value, masterPassword);
+      await writePassword(name, encryptedPassword, database);
+      response.status(201).send("Password created");
+    } catch (error) {
+      console.error("Something went wrong 😑", error);
+    }
+  });
+
+  app.delete("/api/passwords/:passwordName", async (request, response) => {
+    try {
+      console.log(`Delete /api/passwords/${request.params.passwordName}`);
+      const password = await collection.deleteOne({
+        name: request.params.passwordName,
+      });
+      response.json(password);
+    } catch (error) {
+      console.error("Something went wrong 😑", error);
+    }
   });
 
   app.listen(port, function () {
-    console.log(`Listening on http://localhost:${port}`);
+    try {
+      console.log(`Listening on http://localhost:${port}`);
+    } catch (error) {
+      console.error("Something went wrong 😑", error);
+    }
   });
 }
 
