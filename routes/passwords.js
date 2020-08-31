@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
@@ -18,6 +19,10 @@ function createPasswordsRouter(database, masterPassword) {
   router.get("/:name", async (request, response) => {
     try {
       const { name } = request.params;
+      const { authToken } = request.cookies;
+
+      const { username } = jwt.verify(authToken, process.env.JWT_SECRET);
+      console.log(`Allow access to ${username}`);
       const encryptedPassword = await readPassword(name, database);
       if (!encryptedPassword) {
         response.status(404).send(`Password ${name} not found`);

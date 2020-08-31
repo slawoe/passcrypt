@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const createPasswordsRouter = require("./routes/passwords");
 const createUsersRouter = require("./routes/users");
 
@@ -19,12 +20,20 @@ async function main() {
   const database = client.db(process.env.MONGO_DB);
   const masterPassword = process.env.MASTER_PASSWORD;
   app.use(bodyParser.json());
+  app.use(cookieParser());
+
   app.use((request, response, next) => {
+    console.log(`Request ${request.method} on ${request.url}`);
     next();
   });
 
   app.use("/api/passwords", createPasswordsRouter(database, masterPassword));
-  app.use("/api/users", createUsersRouter(database));
+  app.use("/api/users", createUsersRouter(database, masterPassword));
+
+  app.get("/", (request, response) => {
+    response.sendFile(__dirname + "/index.html");
+  });
+
   app.listen(port, function () {
     try {
       console.log(`Listening on http://localhost:${port}`);
