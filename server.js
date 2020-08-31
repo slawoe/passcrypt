@@ -1,68 +1,28 @@
 require("dotenv").config();
-
 const express = require("express");
-const { MongoClient } = require("mongodb");
 const bodyParser = require("body-parser");
-const {
-  writePassword,
-  readPassword,
-  deletePassword,
-} = require("./lib/passwords");
-const { encrypt, decrypt } = require("./lib/crypto");
+const createPasswordsRouter = require("./routes/passwords");
+
+const { MongoClient } = require("mongodb");
+
+const app = express();
+
+const port = 3000;
 
 const client = new MongoClient(process.env.MONGO_URL, {
   useUnifiedTopology: true,
 });
-const app = express();
-app.use(bodyParser.json());
-
-const port = 3000;
 
 async function main() {
   await client.connect();
   const database = client.db(process.env.MONGO_DB);
   const masterPassword = process.env.MASTER_PASSWORD;
-  const collection = database.collection("passwords");
-
-  app.get("/api/passwords/:name", async (request, response) => {
-    try {
-      const { name } = request.params;
-      const encryptedPassword = await readPassword(name, database);
-      if (!encryptedPassword) {
-        response.status(404).send(`Password ${name} not found`);
-        return;
-      }
-      const decryptedPassword = decrypt(password, masterPassword);
-      response.status(200).send(decryptedPassword);
-    } catch (error) {
-      console.error("Something went wrong 😑", error);
-      response.status(500).send(error, message);
-    }
+  app.use(bodyParser.json());
+  app.use((request, response, next) => {
+    next();
   });
 
-  app.post("/api/passwords", async (request, response) => {
-    try {
-      console.log("POST in /api/passwords");
-      const { name, value } = request.body;
-      const encryptedPassword = encrypt(value, masterPassword);
-      await writePassword(name, encryptedPassword, database);
-      response.status(201).send("Password created");
-    } catch (error) {
-      console.error("Something went wrong 😑", error);
-    }
-  });
-
-  app.delete("/api/passwords/:passwordName", async (request, response) => {
-    try {
-      console.log(`Delete /api/passwords/${request.params.passwordName}`);
-      const password = await collection.deleteOne({
-        name: request.params.passwordName,
-      });
-      response.json(password);
-    } catch (error) {
-      console.error("Something went wrong 😑", error);
-    }
-  });
+  app.use("/", createPasswordsRouter(database, masterPassword));
 
   app.listen(port, function () {
     try {
