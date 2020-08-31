@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const createPasswordsRouter = require("./routes/passwords");
+const createUsersRouter = require("./routes/users");
 
 const { MongoClient } = require("mongodb");
 
@@ -22,8 +23,8 @@ async function main() {
     next();
   });
 
-  app.use("/", createPasswordsRouter(database, masterPassword));
-
+  app.use("/api/passwords", createPasswordsRouter(database, masterPassword));
+  app.use("/api/users", createUsersRouter(database));
   app.listen(port, function () {
     try {
       console.log(`Listening on http://localhost:${port}`);
