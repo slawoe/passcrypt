@@ -27,11 +27,16 @@ async function main() {
   app.get("/api/passwords/:name", async (request, response) => {
     try {
       const { name } = request.params;
-      const password = await readPassword(name, database);
+      const encryptedPassword = await readPassword(name, database);
+      if (!encryptedPassword) {
+        response.status(404).send(`Password ${name} not found`);
+        return;
+      }
       const decryptedPassword = decrypt(password, masterPassword);
       response.status(200).send(decryptedPassword);
     } catch (error) {
       console.error("Something went wrong 😑", error);
+      response.status(500).send(error, message);
     }
   });
 
