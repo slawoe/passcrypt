@@ -8,7 +8,20 @@ const bodyParser = require("body-parser");
 const { writePassword, readPassword } = require("../lib/passwords");
 const { encrypt, decrypt } = require("../lib/crypto");
 
+function jwtVerify(request, response, next) {
+  try {
+    const { authToken } = request.cookies;
+    const { username } = jwt.verify(authToken, process.env.JWT_SECRET);
+  } catch (error) {
+    console.error("Something went wrong 😑", error);
+    response.status(500).send(error.message);
+  }
+  next();
+}
+
 router.use(bodyParser.json());
+
+router.use(jwtVerify);
 
 function createPasswordsRouter(database, masterPassword) {
   const collection = database.collection("passwords");
@@ -19,9 +32,8 @@ function createPasswordsRouter(database, masterPassword) {
   router.get("/:name", async (request, response) => {
     try {
       const { name } = request.params;
-      const { authToken } = request.cookies;
-      const { username } = jwt.verify(authToken, process.env.JWT_SECRET);
-      console.log(`Allow access to ${username}`);
+
+      // console.log(`Allow access to ${username}`);
       const encryptedPassword = await readPassword(name, database);
       if (!encryptedPassword) {
         response.status(404).send(`Password ${name} not found`);
