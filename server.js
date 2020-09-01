@@ -18,6 +18,7 @@ const client = new MongoClient(process.env.MONGO_URL, {
 async function main() {
   await client.connect();
   const database = client.db(process.env.MONGO_DB);
+  database.collection("passwords").createIndex({ name: 1 }, { unique: true });
   const masterPassword = process.env.MASTER_PASSWORD;
   app.use(bodyParser.json());
   app.use(cookieParser());
