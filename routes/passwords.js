@@ -20,7 +20,6 @@ function createPasswordsRouter(database, masterPassword) {
     try {
       const { name } = request.params;
       const { authToken } = request.cookies;
-
       const { username } = jwt.verify(authToken, process.env.JWT_SECRET);
       console.log(`Allow access to ${username}`);
       const encryptedPassword = await readPassword(name, database);
@@ -60,6 +59,24 @@ function createPasswordsRouter(database, masterPassword) {
       console.error("Something went wrong 😑", error);
     }
   });
+
+  router.patch("/:passwordName", async (request, response) => {
+    try {
+      console.log(`Patch /api/passwords/${request.params.passwordName}`);
+      const encryptedPassword = await encrypt(
+        request.body.value,
+        masterPassword
+      );
+      const updatePassword = await collection.updateOne(
+        { name: request.params.passwordName },
+        { $set: { value: encryptedPassword } }
+      );
+      response.json(updatePassword);
+    } catch (error) {
+      console.error("Something went wrong 😑", error);
+    }
+  });
+
   return router;
 }
 
